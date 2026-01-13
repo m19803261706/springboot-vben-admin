@@ -155,10 +155,11 @@ public class SysRoleServiceImpl implements SysRoleService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<RoleVO> findById(Long id) {
         return roleRepository.findById(id)
                 .filter(r -> r.getDelFlag() == 0)
-                .map(this::convertToVO);
+                .map(role -> convertToVO(role, true));  // 详情页需要包含关联数据
     }
 
     @Override
@@ -270,12 +271,23 @@ public class SysRoleServiceImpl implements SysRoleService {
     }
 
     /**
-     * 将角色实体转换为视图对象
+     * 将角色实体转换为视图对象 (不包含关联数据，用于列表查询)
      *
      * @param role 角色实体
      * @return 角色视图对象
      */
     private RoleVO convertToVO(SysRole role) {
+        return convertToVO(role, false);
+    }
+
+    /**
+     * 将角色实体转换为视图对象
+     *
+     * @param role            角色实体
+     * @param includeRelation 是否包含关联数据 (菜单、部门)
+     * @return 角色视图对象
+     */
+    private RoleVO convertToVO(SysRole role, boolean includeRelation) {
         RoleVO vo = new RoleVO();
         vo.setId(role.getId());
         vo.setRoleName(role.getRoleName());
@@ -288,23 +300,29 @@ public class SysRoleServiceImpl implements SysRoleService {
         vo.setCreatedAt(role.getCreateTime());
         vo.setUpdatedAt(role.getUpdateTime());
 
-        // 设置菜单ID列表
-        if (role.getMenus() != null && !role.getMenus().isEmpty()) {
-            List<Long> menuIds = role.getMenus().stream()
-                    .map(SysMenu::getId)
-                    .collect(Collectors.toList());
-            vo.setMenuIds(menuIds);
+        // 设置关联数据 (仅在需要时获取，避免懒加载异常)
+        if (includeRelation) {
+            // 设置菜单ID列表
+            if (role.getMenus() != null && !role.getMenus().isEmpty()) {
+                List<Long> menuIds = role.getMenus().stream()
+                        .map(SysMenu::getId)
+                        .collect(Collectors.toList());
+                vo.setMenuIds(menuIds);
+            } else {
+                vo.setMenuIds(Collections.emptyList());
+            }
+
+            // 设置部门ID列表
+            if (role.getDepts() != null && !role.getDepts().isEmpty()) {
+                List<Long> deptIds = role.getDepts().stream()
+                        .map(SysDept::getId)
+                        .collect(Collectors.toList());
+                vo.setDeptIds(deptIds);
+            } else {
+                vo.setDeptIds(Collections.emptyList());
+            }
         } else {
             vo.setMenuIds(Collections.emptyList());
-        }
-
-        // 设置部门ID列表
-        if (role.getDepts() != null && !role.getDepts().isEmpty()) {
-            List<Long> deptIds = role.getDepts().stream()
-                    .map(SysDept::getId)
-                    .collect(Collectors.toList());
-            vo.setDeptIds(deptIds);
-        } else {
             vo.setDeptIds(Collections.emptyList());
         }
 

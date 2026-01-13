@@ -143,10 +143,11 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Optional<UserVO> findById(Long id) {
         return userRepository.findById(id)
                 .filter(u -> u.getDelFlag() == 0)
-                .map(this::convertToVO);
+                .map(user -> convertToVO(user, true));  // 详情页需要包含角色数据
     }
 
     @Override
@@ -200,7 +201,7 @@ public class SysUserServiceImpl implements SysUserService {
         PageRequest pageRequest = PageRequest.of(
                 query.getPage() != null ? query.getPage() : 0,
                 query.getSize() != null ? query.getSize() : 10,
-                Sort.by(Sort.Direction.DESC, "createdAt")
+                Sort.by(Sort.Direction.DESC, "createTime")
         );
 
         Page<SysUser> page = userRepository.findAll(spec, pageRequest);
@@ -276,12 +277,23 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     /**
-     * 将用户实体转换为视图对象
+     * 将用户实体转换为视图对象 (不包含角色关联，用于列表查询)
      *
      * @param user 用户实体
      * @return 用户视图对象
      */
     private UserVO convertToVO(SysUser user) {
+        return convertToVO(user, false);
+    }
+
+    /**
+     * 将用户实体转换为视图对象
+     *
+     * @param user            用户实体
+     * @param includeRelation 是否包含关联数据 (角色)
+     * @return 用户视图对象
+     */
+    private UserVO convertToVO(SysUser user, boolean includeRelation) {
         UserVO vo = new UserVO();
         vo.setId(user.getId());
         vo.setUsername(user.getUsername());
@@ -300,18 +312,22 @@ public class SysUserServiceImpl implements SysUserService {
                     .ifPresent(dept -> vo.setDeptName(dept.getDeptName()));
         }
 
-        // 设置角色列表
-        if (user.getRoles() != null && !user.getRoles().isEmpty()) {
-            List<UserVO.RoleVO> roleVOs = user.getRoles().stream()
-                    .map(role -> {
-                        UserVO.RoleVO roleVO = new UserVO.RoleVO();
-                        roleVO.setId(role.getId());
-                        roleVO.setRoleName(role.getRoleName());
-                        roleVO.setRoleCode(role.getRoleCode());
-                        return roleVO;
-                    })
-                    .collect(Collectors.toList());
-            vo.setRoles(roleVOs);
+        // 设置角色列表 (仅在需要时获取，避免懒加载异常)
+        if (includeRelation) {
+            if (user.getRoles() != null && !user.getRoles().isEmpty()) {
+                List<UserVO.RoleVO> roleVOs = user.getRoles().stream()
+                        .map(role -> {
+                            UserVO.RoleVO roleVO = new UserVO.RoleVO();
+                            roleVO.setId(role.getId());
+                            roleVO.setRoleName(role.getRoleName());
+                            roleVO.setRoleCode(role.getRoleCode());
+                            return roleVO;
+                        })
+                        .collect(Collectors.toList());
+                vo.setRoles(roleVOs);
+            } else {
+                vo.setRoles(Collections.emptyList());
+            }
         } else {
             vo.setRoles(Collections.emptyList());
         }
