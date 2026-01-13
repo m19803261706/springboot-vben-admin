@@ -114,6 +114,9 @@ public class AuthServiceImpl implements AuthService {
         List<String> roles = roleRepository.findRoleCodesByUserId(userId);
         List<String> permissions = menuRepository.findPermissionsByUserId(userId);
 
+        // 计算用户首页路径 (第一个可访问的菜单页面)
+        String homePath = calculateUserHomePath(userId);
+
         return UserInfoVO.builder()
                 .userId(user.getId())
                 .username(user.getUsername())
@@ -123,6 +126,7 @@ public class AuthServiceImpl implements AuthService {
                 .deptName(deptName)
                 .roles(roles)
                 .permissions(permissions)
+                .homePath(homePath)
                 .build();
     }
 
@@ -416,5 +420,42 @@ public class AuthServiceImpl implements AuthService {
         }
 
         return result;
+    }
+
+    /**
+     * 计算用户首页路径
+     * 获取用户第一个可访问的菜单页面路径
+     *
+     * @param userId 用户ID
+     * @return 首页路径，如果没有可访问的菜单则返回 null
+     */
+    private String calculateUserHomePath(Long userId) {
+        // 查询用户菜单 (不含按钮)
+        List<SysMenu> menus = menuRepository.findMenusByUserId(userId);
+
+        if (menus == null || menus.isEmpty()) {
+            return null;
+        }
+
+        // 补充父级菜单
+        menus = completeParentMenus(menus);
+
+        // 按 sort 排序
+        menus.sort((a, b) -> {
+            Integer sortA = a.getSort() != null ? a.getSort() : 0;
+            Integer sortB = b.getSort() != null ? b.getSort() : 0;
+            return sortA.compareTo(sortB);
+        });
+
+        // 查找第一个菜单类型的页面 (menuType = 1)
+        // 优先找顶层目录下的第一个菜单
+        for (SysMenu menu : menus) {
+            if (menu.getMenuType() == SysMenu.MenuType.MENU && menu.getPath() != null) {
+                log.debug("用户首页路径: userId={}, homePath={}", userId, menu.getPath());
+                return menu.getPath();
+            }
+        }
+
+        return null;
     }
 }

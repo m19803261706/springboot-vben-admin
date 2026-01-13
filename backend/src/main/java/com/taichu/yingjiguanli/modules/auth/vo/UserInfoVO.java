@@ -54,4 +54,9 @@ public class UserInfoVO {
      * 权限标识列表
      */
     private List<String> permissions;
+
+    /**
+     * 用户首页路径 (登录后跳转的默认页面)
+     */
+    private String homePath;
 }
