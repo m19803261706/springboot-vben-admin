@@ -135,3 +135,17 @@ export async function updateRoleStatus(id: number, status: number) {
 export async function assignRoleMenus(id: number, menuIds: number[]) {
   return requestClient.put(`/sys/role/${id}/menu`, { menuIds });
 }
+
+/**
+ * 设置数据权限范围
+ * @param id 角色ID
+ * @param dataScope 数据权限类型 (1-全部 2-本部门 3-本部门及下级 4-仅本人 5-自定义)
+ * @param deptIds 部门ID列表 (dataScope=5时使用)
+ */
+export async function setRoleDataScope(
+  id: number,
+  dataScope: number,
+  deptIds?: number[],
+) {
+  return requestClient.put(`/sys/role/${id}/data-scope`, { dataScope, deptIds });
+}
