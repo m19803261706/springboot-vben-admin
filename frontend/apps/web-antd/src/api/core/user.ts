@@ -14,6 +14,7 @@ interface BackendUserInfo {
   deptName?: string;
   roles: string[];
   permissions: string[];
+  homePath?: string;
 }
 
 /**
@@ -29,5 +30,6 @@ export async function getUserInfoApi(): Promise<UserInfo> {
     realName: res.realName,
     avatar: res.avatar || '',
     roles: res.roles,
+    homePath: res.homePath,
   };
 }
