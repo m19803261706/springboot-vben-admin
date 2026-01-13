@@ -1,5 +1,8 @@
 package com.taichu.yingjiguanli.config;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import com.taichu.yingjiguanli.common.ApiResponse;
 import com.taichu.yingjiguanli.common.BusinessException;
 import jakarta.validation.ConstraintViolationException;
@@ -22,6 +25,44 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * 处理未登录异常
+     */
+    @ExceptionHandler(NotLoginException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ApiResponse<Void> handleNotLoginException(NotLoginException e) {
+        String message = switch (e.getType()) {
+            case NotLoginException.NOT_TOKEN -> "未提供Token";
+            case NotLoginException.INVALID_TOKEN -> "Token无效";
+            case NotLoginException.TOKEN_TIMEOUT -> "Token已过期";
+            case NotLoginException.BE_REPLACED -> "账号已在其他地方登录";
+            case NotLoginException.KICK_OUT -> "账号已被踢下线";
+            default -> "未登录";
+        };
+        log.warn("未登录异常: type={}, message={}", e.getType(), message);
+        return ApiResponse.error(401, message);
+    }
+
+    /**
+     * 处理无权限异常
+     */
+    @ExceptionHandler(NotPermissionException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse<Void> handleNotPermissionException(NotPermissionException e) {
+        log.warn("无权限异常: permission={}", e.getPermission());
+        return ApiResponse.error(403, "无权限: " + e.getPermission());
+    }
+
+    /**
+     * 处理无角色异常
+     */
+    @ExceptionHandler(NotRoleException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ApiResponse<Void> handleNotRoleException(NotRoleException e) {
+        log.warn("无角色异常: role={}", e.getRole());
+        return ApiResponse.error(403, "无角色: " + e.getRole());
+    }
 
     /**
      * 处理业务异常
