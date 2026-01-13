@@ -137,6 +137,9 @@ public class AuthServiceImpl implements AuthService {
         // 查询用户菜单 (不含按钮)
         List<SysMenu> menus = menuRepository.findMenusByUserId(userId);
 
+        // 补充缺失的父级菜单 (确保树形结构完整)
+        menus = completeParentMenus(menus);
+
         // 转换为 VO 并构建树形结构
         List<MenuVO> menuVOList = menus.stream()
                 .map(this::convertToMenuVO)
@@ -156,6 +159,9 @@ public class AuthServiceImpl implements AuthService {
         // 查询用户菜单 (不含按钮)
         List<SysMenu> menus = menuRepository.findMenusByUserId(userId);
 
+        // 补充缺失的父级菜单 (确保树形结构完整)
+        menus = completeParentMenus(menus);
+
         // 转换为路由数据并构建树形结构
         List<RouteData> routeDataList = menus.stream()
                 .map(this::convertToRouteData)
@@ -172,6 +178,46 @@ public class AuthServiceImpl implements AuthService {
         Long userId = StpUtil.getLoginIdAsLong();
         log.debug("获取用户权限列表, userId={}", userId);
         return menuRepository.findPermissionsByUserId(userId);
+    }
+
+    /**
+     * 补充缺失的父级菜单
+     * 确保菜单树形结构完整，每个菜单的父级菜单都存在
+     *
+     * @param menus 用户直接拥有权限的菜单列表
+     * @return 包含所有父级菜单的完整菜单列表
+     */
+    private List<SysMenu> completeParentMenus(List<SysMenu> menus) {
+        if (menus == null || menus.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // 使用 Map 存储已有的菜单，避免重复
+        Map<Long, SysMenu> menuMap = menus.stream()
+                .collect(Collectors.toMap(SysMenu::getId, m -> m, (m1, m2) -> m1));
+
+        // 收集所有需要补充的父级菜单ID
+        java.util.Set<Long> missingParentIds = new java.util.HashSet<>();
+        for (SysMenu menu : menus) {
+            Long parentId = menu.getParentId();
+            // 遍历所有父级，直到根节点 (parentId = 0)
+            while (parentId != null && parentId != 0 && !menuMap.containsKey(parentId)) {
+                missingParentIds.add(parentId);
+                // 查询父级菜单以获取其 parentId
+                SysMenu parentMenu = menuRepository.findById(parentId).orElse(null);
+                if (parentMenu != null) {
+                    menuMap.put(parentMenu.getId(), parentMenu);
+                    parentId = parentMenu.getParentId();
+                } else {
+                    break;
+                }
+            }
+        }
+
+        log.debug("补充父级菜单: 原有{}个, 补充{}个父级菜单",
+                menus.size(), menuMap.size() - menus.size());
+
+        return new ArrayList<>(menuMap.values());
     }
 
     /**
