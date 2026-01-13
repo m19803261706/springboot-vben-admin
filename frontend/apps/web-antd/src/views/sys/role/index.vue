@@ -39,6 +39,7 @@ import {
 import type { TableColumnsType, TablePaginationConfig, TreeProps } from 'ant-design-vue';
 import {
   getRoleList,
+  getRoleDetail,
   createRole,
   updateRole,
   deleteRole,
@@ -323,10 +324,17 @@ function transformMenuTree(menus: MenuRecord[]): TreeProps['treeData'] {
 const menuTreeData = computed(() => transformMenuTree(menuTree.value));
 
 /** 打开菜单权限弹窗 */
-function handleAssignMenu(record: RoleRecord) {
+async function handleAssignMenu(record: RoleRecord) {
   menuRoleId.value = record.id;
   menuRoleName.value = record.roleName;
-  checkedMenuIds.value = record.menuIds || [];
+  // 从详情接口获取完整的角色信息（包含 menuIds）
+  try {
+    const roleDetail = await getRoleDetail(record.id);
+    checkedMenuIds.value = roleDetail.menuIds || [];
+  } catch (error) {
+    console.error('获取角色详情失败:', error);
+    checkedMenuIds.value = [];
+  }
   menuVisible.value = true;
 }
 
@@ -399,11 +407,18 @@ function transformDeptTree(depts: DeptRecord[]): TreeProps['treeData'] {
 const deptTreeData = computed(() => transformDeptTree(deptTree.value));
 
 /** 打开数据权限弹窗 */
-function handleSetDataScope(record: RoleRecord) {
+async function handleSetDataScope(record: RoleRecord) {
   dataScopeRoleId.value = record.id;
   dataScopeRoleName.value = record.roleName;
   dataScopeType.value = record.dataScope;
-  checkedDeptIds.value = record.deptIds || [];
+  // 从详情接口获取完整的角色信息（包含 deptIds）
+  try {
+    const roleDetail = await getRoleDetail(record.id);
+    checkedDeptIds.value = roleDetail.deptIds || [];
+  } catch (error) {
+    console.error('获取角色详情失败:', error);
+    checkedDeptIds.value = [];
+  }
   dataScopeVisible.value = true;
 }
 
