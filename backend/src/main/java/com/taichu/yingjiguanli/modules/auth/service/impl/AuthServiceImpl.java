@@ -353,6 +353,12 @@ public class AuthServiceImpl implements AuthService {
                 // 递归获取子路由
                 List<RouteVO> childRoutes = buildRouteTreeRecursive(routeMap, data.getMenuId());
                 route.setChildren(childRoutes.isEmpty() ? null : childRoutes);
+
+                // 如果有子路由且当前是目录（BasicLayout），设置 redirect 到第一个子路由
+                if (!childRoutes.isEmpty() && "BasicLayout".equals(route.getComponent())) {
+                    route.setRedirect(childRoutes.get(0).getPath());
+                }
+
                 result.add(route);
             }
             // 按排序字段排序
