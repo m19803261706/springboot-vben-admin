@@ -9,5 +9,9 @@ export const overridesPreferences = defineOverridesPreferences({
   // overrides
   app: {
     name: import.meta.env.VITE_APP_TITLE,
+    // 启用后端动态路由模式
+    accessMode: 'backend',
+    // 设置默认首页为系统管理-用户管理
+    defaultHomePath: '/sys/user',
   },
 });
