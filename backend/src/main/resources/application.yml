@@ -1,0 +1,52 @@
+# 应急管理系统 - 应用配置
+server:
+  port: 10001
+
+spring:
+  application:
+    name: yingjiguanli
+
+  # 数据源配置 (华为云 MySQL 8)
+  datasource:
+    url: jdbc:mysql://60.10.240.4:3306/yingjiguanli?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: ${DB_PASSWORD:123456}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      idle-timeout: 30000
+      pool-name: YingjiHikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  # JPA 配置 (Hibernate 7)
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+    open-in-view: false
+
+# SpringDoc OpenAPI 配置
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.taichu.yingjiguanli: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
