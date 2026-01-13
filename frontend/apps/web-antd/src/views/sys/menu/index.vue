@@ -36,6 +36,7 @@ import {
   MenuOutlined,
   ControlOutlined,
 } from '@ant-design/icons-vue';
+import { IconifyIcon } from '@vben/icons';
 import type { TableColumnsType } from 'ant-design-vue';
 import {
   getMenuTree,
@@ -51,45 +52,90 @@ defineOptions({ name: 'MenuManagement' });
 
 // ============ 常用图标列表 ============
 
-/** 常用图标选项 */
+/** 常用图标选项 - Ant Design 图标 */
 const iconOptions = [
-  'lucide:home',
-  'lucide:settings',
-  'lucide:users',
-  'lucide:shield',
-  'lucide:menu',
-  'lucide:building-2',
-  'lucide:layout-dashboard',
-  'lucide:file-text',
-  'lucide:folder',
-  'lucide:database',
-  'lucide:server',
-  'lucide:monitor',
-  'lucide:bell',
-  'lucide:mail',
-  'lucide:calendar',
-  'lucide:chart-bar',
-  'lucide:pie-chart',
-  'lucide:image',
-  'lucide:video',
-  'lucide:music',
-  'lucide:lock',
-  'lucide:key',
-  'lucide:link',
-  'lucide:globe',
-  'lucide:search',
-  'lucide:filter',
-  'lucide:download',
-  'lucide:upload',
-  'lucide:trash',
-  'lucide:edit',
-  'lucide:plus',
-  'lucide:minus',
-  'lucide:check',
-  'lucide:x',
-  'lucide:alert-circle',
-  'lucide:info',
-  'lucide:help-circle',
+  // 系统管理相关
+  'ant-design:setting-outlined',
+  'ant-design:user-outlined',
+  'ant-design:team-outlined',
+  'ant-design:menu-outlined',
+  'ant-design:apartment-outlined',
+  'ant-design:safety-outlined',
+  'ant-design:lock-outlined',
+  'ant-design:key-outlined',
+  // 导航和布局
+  'ant-design:home-outlined',
+  'ant-design:dashboard-outlined',
+  'ant-design:appstore-outlined',
+  'ant-design:layout-outlined',
+  'ant-design:menu-fold-outlined',
+  'ant-design:menu-unfold-outlined',
+  // 文件和文档
+  'ant-design:file-outlined',
+  'ant-design:file-text-outlined',
+  'ant-design:folder-outlined',
+  'ant-design:folder-open-outlined',
+  'ant-design:copy-outlined',
+  // 数据和图表
+  'ant-design:database-outlined',
+  'ant-design:table-outlined',
+  'ant-design:bar-chart-outlined',
+  'ant-design:line-chart-outlined',
+  'ant-design:pie-chart-outlined',
+  'ant-design:area-chart-outlined',
+  // 通信
+  'ant-design:mail-outlined',
+  'ant-design:message-outlined',
+  'ant-design:notification-outlined',
+  'ant-design:bell-outlined',
+  'ant-design:comment-outlined',
+  // 媒体
+  'ant-design:picture-outlined',
+  'ant-design:video-camera-outlined',
+  'ant-design:sound-outlined',
+  'ant-design:camera-outlined',
+  // 商业
+  'ant-design:shop-outlined',
+  'ant-design:shopping-cart-outlined',
+  'ant-design:money-collect-outlined',
+  'ant-design:wallet-outlined',
+  'ant-design:credit-card-outlined',
+  // 工具
+  'ant-design:tool-outlined',
+  'ant-design:thunderbolt-outlined',
+  'ant-design:api-outlined',
+  'ant-design:code-outlined',
+  'ant-design:cloud-outlined',
+  'ant-design:cloud-server-outlined',
+  'ant-design:desktop-outlined',
+  'ant-design:mobile-outlined',
+  // 状态和操作
+  'ant-design:search-outlined',
+  'ant-design:edit-outlined',
+  'ant-design:delete-outlined',
+  'ant-design:plus-outlined',
+  'ant-design:minus-outlined',
+  'ant-design:check-outlined',
+  'ant-design:close-outlined',
+  'ant-design:info-circle-outlined',
+  'ant-design:exclamation-circle-outlined',
+  'ant-design:question-circle-outlined',
+  // 其他常用
+  'ant-design:calendar-outlined',
+  'ant-design:clock-circle-outlined',
+  'ant-design:environment-outlined',
+  'ant-design:global-outlined',
+  'ant-design:link-outlined',
+  'ant-design:star-outlined',
+  'ant-design:heart-outlined',
+  'ant-design:eye-outlined',
+  'ant-design:download-outlined',
+  'ant-design:upload-outlined',
+  'ant-design:export-outlined',
+  'ant-design:import-outlined',
+  'ant-design:filter-outlined',
+  'ant-design:sort-ascending-outlined',
+  'ant-design:sort-descending-outlined',
 ];
 
 // ============ 菜单类型相关 ============
@@ -123,43 +169,39 @@ const menuTree = ref<MenuRecord[]>([]);
 /** 展开的行 */
 const expandedRowKeys = ref<number[]>([]);
 
+/** 渲染图标 */
+function renderIcon(icon: string) {
+  if (!icon) return h('span', { class: 'text-gray-400' }, '-');
+  return h(IconifyIcon, { icon, class: 'text-xl' });
+}
+
 /** 表格列配置 */
 const columns: TableColumnsType = [
-  { title: '菜单名称', dataIndex: 'menuName', width: 200 },
-  { title: '图标', dataIndex: 'icon', width: 80 },
+  { title: '菜单名称', dataIndex: 'menuName', width: 180 },
+  {
+    title: '图标',
+    dataIndex: 'icon',
+    width: 70,
+    align: 'center',
+    customRender: ({ record }) => renderIcon(record.icon),
+  },
   {
     title: '类型',
     dataIndex: 'menuType',
-    width: 100,
+    width: 90,
+    align: 'center',
     customRender: ({ record }) => getMenuTypeTag(record.menuType),
   },
-  { title: '排序', dataIndex: 'orderNum', width: 80 },
-  { title: '路由路径', dataIndex: 'path', ellipsis: true },
-  { title: '组件路径', dataIndex: 'component', ellipsis: true },
-  { title: '权限标识', dataIndex: 'permission', width: 150 },
-  {
-    title: '状态',
-    dataIndex: 'status',
-    width: 80,
-    customRender: ({ record }) =>
-      h(Tag, { color: record.status === 1 ? 'success' : 'error' }, () =>
-        record.status === 1 ? '启用' : '禁用'
-      ),
-  },
-  {
-    title: '可见',
-    dataIndex: 'visible',
-    width: 80,
-    customRender: ({ record }) =>
-      h(Tag, { color: record.visible === 1 ? 'success' : 'default' }, () =>
-        record.visible === 1 ? '显示' : '隐藏'
-      ),
-  },
+  { title: '排序', dataIndex: 'orderNum', width: 70, align: 'center' },
+  { title: '路由路径', dataIndex: 'path', width: 140, ellipsis: true },
+  { title: '组件路径', dataIndex: 'component', width: 160, ellipsis: true },
+  { title: '权限标识', dataIndex: 'permission', width: 140, ellipsis: true },
   {
     title: '操作',
     key: 'action',
-    width: 200,
+    width: 180,
     fixed: 'right',
+    align: 'center',
   },
 ];
 
@@ -344,12 +386,6 @@ onMounted(() => {
         :indent-size="20"
       >
         <template #bodyCell="{ column, record }">
-          <template v-if="column.dataIndex === 'icon'">
-            <span v-if="record.icon" class="text-lg">
-              {{ record.icon }}
-            </span>
-            <span v-else class="text-gray-400">-</span>
-          </template>
           <template v-if="column.key === 'action'">
             <Space>
               <Button
@@ -432,9 +468,13 @@ onMounted(() => {
             placeholder="请选择图标"
             allow-clear
             show-search
+            :filter-option="(input: string, option: any) => option.value.toLowerCase().includes(input.toLowerCase())"
           >
             <SelectOption v-for="icon in iconOptions" :key="icon" :value="icon">
-              {{ icon }}
+              <div class="flex items-center gap-2">
+                <IconifyIcon :icon="icon" class="text-lg" />
+                <span class="text-xs text-gray-500">{{ icon }}</span>
+              </div>
             </SelectOption>
           </Select>
         </FormItem>
