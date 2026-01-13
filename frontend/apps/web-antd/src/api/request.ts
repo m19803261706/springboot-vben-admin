@@ -72,11 +72,12 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   });
 
   // 处理返回的响应数据格式
+  // 后端使用 code: 200 表示成功
   client.addResponseInterceptor(
     defaultResponseInterceptor({
       codeField: 'code',
       dataField: 'data',
-      successCode: 0,
+      successCode: 200,
     }),
   );
 

@@ -10,6 +10,8 @@ export namespace AuthApi {
   /** 登录接口返回值 */
   export interface LoginResult {
     accessToken: string;
+    tokenType?: string;
+    expiresIn?: number;
   }
 
   export interface RefreshTokenResult {
@@ -20,6 +22,7 @@ export namespace AuthApi {
 
 /**
  * 登录
+ * 调用后端 /api/auth/login 接口
  */
 export async function loginApi(data: AuthApi.LoginParams) {
   return requestClient.post<AuthApi.LoginResult>('/auth/login', data);
@@ -36,16 +39,16 @@ export async function refreshTokenApi() {
 
 /**
  * 退出登录
+ * 调用后端 /api/auth/logout 接口
  */
 export async function logoutApi() {
-  return baseRequestClient.post('/auth/logout', {
-    withCredentials: true,
-  });
+  return requestClient.post('/auth/logout');
 }
 
 /**
  * 获取用户权限码
+ * 调用后端 /api/auth/permissions 接口
  */
 export async function getAccessCodesApi() {
-  return requestClient.get<string[]>('/auth/codes');
+  return requestClient.get<string[]>('/auth/permissions');
 }
