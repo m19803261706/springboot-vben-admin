@@ -3,6 +3,7 @@ package com.taichu.yingjiguanli.modules.auth.service;
 import com.taichu.yingjiguanli.modules.auth.dto.LoginDTO;
 import com.taichu.yingjiguanli.modules.auth.vo.LoginVO;
 import com.taichu.yingjiguanli.modules.auth.vo.MenuVO;
+import com.taichu.yingjiguanli.modules.auth.vo.RouteVO;
 import com.taichu.yingjiguanli.modules.auth.vo.UserInfoVO;
 
 import java.util.List;
@@ -41,6 +42,13 @@ public interface AuthService {
      * @return 菜单树
      */
     List<MenuVO> getCurrentUserMenus();
+
+    /**
+     * 获取当前用户路由 (Vben Admin 格式)
+     *
+     * @return 路由树
+     */
+    List<RouteVO> getCurrentUserRoutes();
 
     /**
      * 获取当前用户权限列表

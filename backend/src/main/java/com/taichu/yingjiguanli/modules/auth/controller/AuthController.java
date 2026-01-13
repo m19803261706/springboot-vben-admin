@@ -6,6 +6,7 @@ import com.taichu.yingjiguanli.modules.auth.dto.LoginDTO;
 import com.taichu.yingjiguanli.modules.auth.service.AuthService;
 import com.taichu.yingjiguanli.modules.auth.vo.LoginVO;
 import com.taichu.yingjiguanli.modules.auth.vo.MenuVO;
+import com.taichu.yingjiguanli.modules.auth.vo.RouteVO;
 import com.taichu.yingjiguanli.modules.auth.vo.UserInfoVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -75,6 +76,18 @@ public class AuthController {
     @Operation(summary = "获取当前用户菜单", description = "获取当前登录用户的菜单树，用于前端动态路由")
     public ApiResponse<List<MenuVO>> getUserMenus() {
         return ApiResponse.success(authService.getCurrentUserMenus());
+    }
+
+    /**
+     * 获取当前用户路由 (Vben Admin 格式)
+     * 用于前端动态路由生成
+     *
+     * @return 路由树
+     */
+    @GetMapping("/routes")
+    @Operation(summary = "获取当前用户路由", description = "获取当前登录用户的路由配置，符合 Vben Admin 格式")
+    public ApiResponse<List<RouteVO>> getUserRoutes() {
+        return ApiResponse.success(authService.getCurrentUserRoutes());
     }
 
     /**

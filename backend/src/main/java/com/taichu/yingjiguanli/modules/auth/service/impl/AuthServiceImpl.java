@@ -6,6 +6,7 @@ import com.taichu.yingjiguanli.modules.auth.dto.LoginDTO;
 import com.taichu.yingjiguanli.modules.auth.service.AuthService;
 import com.taichu.yingjiguanli.modules.auth.vo.LoginVO;
 import com.taichu.yingjiguanli.modules.auth.vo.MenuVO;
+import com.taichu.yingjiguanli.modules.auth.vo.RouteVO;
 import com.taichu.yingjiguanli.modules.auth.vo.UserInfoVO;
 import com.taichu.yingjiguanli.modules.sys.entity.SysDept;
 import com.taichu.yingjiguanli.modules.sys.entity.SysMenu;
@@ -145,6 +146,25 @@ public class AuthServiceImpl implements AuthService {
     }
 
     /**
+     * 获取当前用户路由 (Vben Admin 格式)
+     */
+    @Override
+    public List<RouteVO> getCurrentUserRoutes() {
+        Long userId = StpUtil.getLoginIdAsLong();
+        log.debug("获取用户路由, userId={}", userId);
+
+        // 查询用户菜单 (不含按钮)
+        List<SysMenu> menus = menuRepository.findMenusByUserId(userId);
+
+        // 转换为路由数据并构建树形结构
+        List<RouteData> routeDataList = menus.stream()
+                .map(this::convertToRouteData)
+                .collect(Collectors.toList());
+
+        return buildRouteTree(routeDataList, 0L);
+    }
+
+    /**
      * 获取当前用户权限列表
      */
     @Override
@@ -205,6 +225,141 @@ public class AuthServiceImpl implements AuthService {
                 Integer sortA = a.getSort() != null ? a.getSort() : 0;
                 Integer sortB = b.getSort() != null ? b.getSort() : 0;
                 return sortA.compareTo(sortB);
+            });
+        }
+
+        return result;
+    }
+
+    // ==================== 路由相关方法 (Vben Admin 格式) ====================
+
+    /**
+     * 路由数据 (包含菜单ID，用于构建树)
+     */
+    @lombok.Data
+    @lombok.AllArgsConstructor
+    private static class RouteData {
+        private Long menuId;
+        private Long parentId;
+        private RouteVO route;
+    }
+
+    /**
+     * 转换菜单实体为路由 VO (Vben Admin 格式)
+     */
+    private RouteData convertToRouteData(SysMenu menu) {
+        RouteVO route = new RouteVO();
+
+        // 生成路由名称
+        String routeName = generateRouteName(menu);
+        route.setName(routeName);
+
+        // 设置路径
+        route.setPath(menu.getPath() != null ? menu.getPath() : "/" + menu.getId());
+
+        // 设置组件
+        if (menu.getMenuType() == SysMenu.MenuType.DIRECTORY) {
+            // 目录使用基础布局
+            route.setComponent("BasicLayout");
+        } else if (menu.getMenuType() == SysMenu.MenuType.MENU) {
+            // 菜单使用具体组件
+            String component = menu.getComponent();
+            if (component != null && !component.isEmpty()) {
+                // 确保组件路径格式正确
+                if (!component.startsWith("/")) {
+                    component = "/" + component;
+                }
+                route.setComponent(component);
+            }
+        }
+
+        // 设置元信息
+        RouteVO.RouteMeta meta = new RouteVO.RouteMeta();
+        meta.setTitle(menu.getMenuName());
+        meta.setIcon(menu.getIcon());
+        meta.setOrder(menu.getSort());
+        meta.setHideInMenu(menu.getVisible() != null && menu.getVisible() == 0);
+        meta.setKeepAlive(true); // 默认开启缓存
+
+        // 设置权限标识
+        if (menu.getPermission() != null && !menu.getPermission().isEmpty()) {
+            meta.setAuthority(List.of(menu.getPermission()));
+        }
+
+        route.setMeta(meta);
+
+        return new RouteData(menu.getId(), menu.getParentId(), route);
+    }
+
+    /**
+     * 生成路由名称
+     */
+    private String generateRouteName(SysMenu menu) {
+        // 使用路径生成路由名称
+        if (menu.getPath() != null && !menu.getPath().isEmpty()) {
+            String path = menu.getPath();
+            // 移除开头的斜杠
+            if (path.startsWith("/")) {
+                path = path.substring(1);
+            }
+            // 将斜杠替换为驼峰命名
+            StringBuilder sb = new StringBuilder();
+            boolean capitalizeNext = false;
+            for (char c : path.toCharArray()) {
+                if (c == '/' || c == '-') {
+                    capitalizeNext = true;
+                } else {
+                    if (capitalizeNext) {
+                        sb.append(Character.toUpperCase(c));
+                        capitalizeNext = false;
+                    } else if (sb.length() == 0) {
+                        sb.append(Character.toUpperCase(c));
+                    } else {
+                        sb.append(c);
+                    }
+                }
+            }
+            return sb.toString();
+        }
+        // 使用菜单名称
+        return "Menu" + menu.getId();
+    }
+
+    /**
+     * 构建路由树
+     *
+     * @param routeDataList 路由数据列表
+     * @param parentId      父菜单ID
+     * @return 路由树
+     */
+    private List<RouteVO> buildRouteTree(List<RouteData> routeDataList, Long parentId) {
+        // 按父ID分组
+        Map<Long, List<RouteData>> routeMap = routeDataList.stream()
+                .collect(Collectors.groupingBy(RouteData::getParentId));
+
+        return buildRouteTreeRecursive(routeMap, parentId);
+    }
+
+    /**
+     * 递归构建路由树
+     */
+    private List<RouteVO> buildRouteTreeRecursive(Map<Long, List<RouteData>> routeMap, Long parentId) {
+        List<RouteVO> result = new ArrayList<>();
+        List<RouteData> children = routeMap.get(parentId);
+
+        if (children != null) {
+            for (RouteData data : children) {
+                RouteVO route = data.getRoute();
+                // 递归获取子路由
+                List<RouteVO> childRoutes = buildRouteTreeRecursive(routeMap, data.getMenuId());
+                route.setChildren(childRoutes.isEmpty() ? null : childRoutes);
+                result.add(route);
+            }
+            // 按排序字段排序
+            result.sort((a, b) -> {
+                Integer orderA = a.getMeta() != null && a.getMeta().getOrder() != null ? a.getMeta().getOrder() : 0;
+                Integer orderB = b.getMeta() != null && b.getMeta().getOrder() != null ? b.getMeta().getOrder() : 0;
+                return orderA.compareTo(orderB);
             });
         }
 
