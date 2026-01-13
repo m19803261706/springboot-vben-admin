@@ -23,7 +23,7 @@ spring:
   # JPA 配置 (Hibernate 7)
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     show-sql: true
     properties:
       hibernate:

@@ -285,8 +285,8 @@ public class SysRoleServiceImpl implements SysRoleService {
         vo.setSort(role.getSort());
         vo.setStatus(role.getStatus());
         vo.setRemark(role.getRemark());
-        vo.setCreatedAt(role.getCreatedAt());
-        vo.setUpdatedAt(role.getUpdatedAt());
+        vo.setCreatedAt(role.getCreateTime());
+        vo.setUpdatedAt(role.getUpdateTime());
 
         // 设置菜单ID列表
         if (role.getMenus() != null && !role.getMenus().isEmpty()) {

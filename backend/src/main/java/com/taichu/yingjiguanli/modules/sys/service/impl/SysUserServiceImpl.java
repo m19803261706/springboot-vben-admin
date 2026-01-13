@@ -291,8 +291,8 @@ public class SysUserServiceImpl implements SysUserService {
         vo.setAvatar(user.getAvatar());
         vo.setDeptId(user.getDeptId());
         vo.setStatus(user.getStatus());
-        vo.setCreatedAt(user.getCreatedAt());
-        vo.setUpdatedAt(user.getUpdatedAt());
+        vo.setCreatedAt(user.getCreateTime());
+        vo.setUpdatedAt(user.getUpdateTime());
 
         // 设置部门名称
         if (user.getDeptId() != null) {

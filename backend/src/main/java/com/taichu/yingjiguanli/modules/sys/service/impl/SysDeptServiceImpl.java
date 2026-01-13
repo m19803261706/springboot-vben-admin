@@ -221,8 +221,8 @@ public class SysDeptServiceImpl implements SysDeptService {
         vo.setPhone(dept.getPhone());
         vo.setSort(dept.getSort());
         vo.setStatus(dept.getStatus());
-        vo.setCreatedAt(dept.getCreatedAt());
-        vo.setUpdatedAt(dept.getUpdatedAt());
+        vo.setCreatedAt(dept.getCreateTime());
+        vo.setUpdatedAt(dept.getUpdateTime());
         vo.setChildren(new ArrayList<>());
         return vo;
     }

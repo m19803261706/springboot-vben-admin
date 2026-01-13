@@ -241,8 +241,8 @@ public class SysMenuServiceImpl implements SysMenuService {
         vo.setSort(menu.getSort());
         vo.setVisible(menu.getVisible());
         vo.setStatus(menu.getStatus());
-        vo.setCreatedAt(menu.getCreatedAt());
-        vo.setUpdatedAt(menu.getUpdatedAt());
+        vo.setCreatedAt(menu.getCreateTime());
+        vo.setUpdatedAt(menu.getUpdateTime());
         vo.setChildren(new ArrayList<>());
         return vo;
     }
