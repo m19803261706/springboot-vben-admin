@@ -1,6 +1,8 @@
 package com.taichu.yingjiguanli.modules.sys.service.impl;
 
 import com.taichu.yingjiguanli.common.BusinessException;
+import com.taichu.yingjiguanli.common.annotation.DataScope;
+import com.taichu.yingjiguanli.common.datascope.DataScopeHelper;
 import com.taichu.yingjiguanli.modules.sys.dto.*;
 import com.taichu.yingjiguanli.modules.sys.entity.SysDept;
 import com.taichu.yingjiguanli.modules.sys.entity.SysRole;
@@ -40,6 +42,7 @@ public class SysUserServiceImpl implements SysUserService {
     private final SysRoleRepository roleRepository;
     private final SysDeptRepository deptRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DataScopeHelper dataScopeHelper;
 
     @Override
     @Transactional
@@ -147,6 +150,7 @@ public class SysUserServiceImpl implements SysUserService {
     }
 
     @Override
+    @DataScope(deptAlias = "", userAlias = "")
     public Page<UserVO> findPage(UserQueryDTO query) {
         log.info("分页查询用户: {}", query);
 
@@ -180,6 +184,13 @@ public class SysUserServiceImpl implements SysUserService {
             // 状态筛选
             if (query.getStatus() != null) {
                 predicates.add(cb.equal(root.get("status"), query.getStatus()));
+            }
+
+            // 数据权限过滤
+            Predicate dataScopePredicate = dataScopeHelper.buildDataScopePredicate(
+                    root, cb, "deptId", "id");
+            if (dataScopePredicate != null) {
+                predicates.add(dataScopePredicate);
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));
