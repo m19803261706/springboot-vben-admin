@@ -25,6 +25,19 @@ interface BackendRoute {
 }
 
 /**
+ * 转换组件路径格式
+ * 后端: /sys/user/index -> 前端: ../views/sys/user/index.vue
+ */
+function transformComponent(component: string): string {
+  if (!component || component === 'BasicLayout' || component === 'IFrameView') {
+    return component;
+  }
+  // 将 /sys/user/index 转换为 ../views/sys/user/index.vue
+  const path = component.startsWith('/') ? component : `/${component}`;
+  return `../views${path}.vue`;
+}
+
+/**
  * 转换后端路由格式为前端路由格式
  * 后端返回的路由格式需要转换为 Vben Admin 的 RouteRecordStringComponent 格式
  */
@@ -33,7 +46,7 @@ function transformRoutes(routes: BackendRoute[]): RouteRecordStringComponent[] {
     const result: RouteRecordStringComponent = {
       name: route.name,
       path: route.path,
-      component: route.component,
+      component: transformComponent(route.component),
       redirect: route.redirect,
       meta: {
         title: route.meta.title,
