@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Cache Cleaner",
+  "version": "1.0.0",
+  "description": "一键清除页面缓存并强制刷新，方便前端开发测试",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "browsingData"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "清除缓存",
+    "default_icon": {
+      "16": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}

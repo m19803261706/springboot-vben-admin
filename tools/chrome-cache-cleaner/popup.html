@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      width: 280px;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 200px;
+    }
+    h1 {
+      color: white;
+      font-size: 16px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+    .btn-primary {
+      background: #ff6b6b;
+      color: white;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.9);
+      color: #333;
+    }
+    .btn-success {
+      background: #51cf66;
+      color: white;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+      font-size: 12px;
+      text-align: center;
+      display: none;
+    }
+    .status.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cache Cleaner</h1>
+
+  <button class="btn btn-primary" id="clearAll">
+    <span>🔥</span> 清除全部并刷新
+  </button>
+
+  <button class="btn btn-secondary" id="clearStorage">
+    <span>🗑️</span> 仅清除 Storage
+  </button>
+
+  <button class="btn btn-secondary" id="clearCache">
+    <span>📦</span> 仅清除浏览器缓存
+  </button>
+
+  <button class="btn btn-success" id="hardReload">
+    <span>🔄</span> 强制刷新
+  </button>
+
+  <div class="status" id="status"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
