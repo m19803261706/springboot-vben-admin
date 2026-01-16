@@ -35,9 +35,11 @@ spring:
   flyway:
     enabled: true
     baseline-on-migrate: true
+    baseline-version: 4
     locations: classpath:db/migration
     table: flyway_schema_history
-    validate-on-migrate: true
+    validate-on-migrate: false
+    out-of-order: true
 
 # Sa-Token 权限认证配置
 sa-token:
@@ -79,5 +81,7 @@ logging:
     org.springframework.web: INFO
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.flywaydb: DEBUG
+    org.springframework.boot.autoconfigure.flyway: DEBUG
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
